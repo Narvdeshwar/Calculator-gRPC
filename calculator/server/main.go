@@ -19,6 +19,13 @@ func (s *server) Add(ctx context.Context, req *pb.CalcRequest) (*pb.CalcResponse
 		Result: result,
 	}, nil
 }
+
+func (s *server) Multiply(ctx context.Context, req *pb.CalcRequest) (*pb.CalcResponse, error) {
+	result := req.A * req.B
+	return &pb.CalcResponse{
+		Result: result,
+	}, nil
+}
 func main() {
 	lis, err := net.Listen("tcp", ":50051")
 	if err != nil {

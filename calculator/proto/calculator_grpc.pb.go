@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.6.1
 // - protoc             v7.34.1
-// source: proto/calculator.proto
+// source: calculator.proto
 
 package proto
 
@@ -19,7 +19,8 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Calculator_Add_FullMethodName = "/calculator.Calculator/Add"
+	Calculator_Add_FullMethodName      = "/calculator.Calculator/Add"
+	Calculator_Multiply_FullMethodName = "/calculator.Calculator/Multiply"
 )
 
 // CalculatorClient is the client API for Calculator service.
@@ -27,6 +28,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CalculatorClient interface {
 	Add(ctx context.Context, in *CalcRequest, opts ...grpc.CallOption) (*CalcResponse, error)
+	Multiply(ctx context.Context, in *CalcRequest, opts ...grpc.CallOption) (*CalcResponse, error)
 }
 
 type calculatorClient struct {
@@ -47,11 +49,22 @@ func (c *calculatorClient) Add(ctx context.Context, in *CalcRequest, opts ...grp
 	return out, nil
 }
 
+func (c *calculatorClient) Multiply(ctx context.Context, in *CalcRequest, opts ...grpc.CallOption) (*CalcResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CalcResponse)
+	err := c.cc.Invoke(ctx, Calculator_Multiply_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // CalculatorServer is the server API for Calculator service.
 // All implementations must embed UnimplementedCalculatorServer
 // for forward compatibility.
 type CalculatorServer interface {
 	Add(context.Context, *CalcRequest) (*CalcResponse, error)
+	Multiply(context.Context, *CalcRequest) (*CalcResponse, error)
 	mustEmbedUnimplementedCalculatorServer()
 }
 
@@ -64,6 +77,9 @@ type UnimplementedCalculatorServer struct{}
 
 func (UnimplementedCalculatorServer) Add(context.Context, *CalcRequest) (*CalcResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method Add not implemented")
+}
+func (UnimplementedCalculatorServer) Multiply(context.Context, *CalcRequest) (*CalcResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method Multiply not implemented")
 }
 func (UnimplementedCalculatorServer) mustEmbedUnimplementedCalculatorServer() {}
 func (UnimplementedCalculatorServer) testEmbeddedByValue()                    {}
@@ -104,6 +120,24 @@ func _Calculator_Add_Handler(srv interface{}, ctx context.Context, dec func(inte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Calculator_Multiply_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CalcRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CalculatorServer).Multiply(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Calculator_Multiply_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CalculatorServer).Multiply(ctx, req.(*CalcRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Calculator_ServiceDesc is the grpc.ServiceDesc for Calculator service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -115,7 +149,11 @@ var Calculator_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "Add",
 			Handler:    _Calculator_Add_Handler,
 		},
+		{
+			MethodName: "Multiply",
+			Handler:    _Calculator_Multiply_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "proto/calculator.proto",
+	Metadata: "calculator.proto",
 }
