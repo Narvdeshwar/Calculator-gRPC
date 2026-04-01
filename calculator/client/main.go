@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	pb "grpc-calculator/proto"
 	"log"
 	"time"
@@ -15,19 +16,51 @@ func main() {
 	if err != nil {
 		log.Fatal("Error at client", err)
 	}
-
 	defer conn.Close()
 
 	client := pb.NewCalculatorClient(conn)
+
+	var operation string
+	var num1, num2 int32
+
+	fmt.Println("=== gRPC Calculator ===")
+	fmt.Print("Enter the first number: ")
+	fmt.Scan(&num1)
+
+	fmt.Print("Enter the second number: ")
+	fmt.Scan(&num2)
+
+	fmt.Print("Enter the operation (add / multiply): ")
+	fmt.Scan(&operation)
+
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	res, err := client.Multiply(ctx, &pb.CalcRequest{
-		A: 20,
-		B: 15,
-	})
-	if err != nil {
-		log.Fatal("Error")
-	}
-	log.Println("Result:", res.Result)
 
+	var result int32
+
+	if operation == "add" {
+		res, err := client.Add(ctx, &pb.CalcRequest{
+			A: num1,
+			B: num2,
+		})
+		if err != nil {
+			log.Fatal("Error performing the addition:", err)
+		}
+		result = res.Result
+
+	} else if operation == "multiply" {
+		res, err := client.Multiply(ctx, &pb.CalcRequest{
+			A: num1,
+			B: num2,
+		})
+		if err != nil {
+			log.Fatal("Error performing multiplication:", err)
+		}
+		result = res.Result
+
+	} else {
+		log.Fatal("Galat operation type kiya! Kripya 'add' ya 'multiply' likhein.")
+	}
+
+	log.Println("Final Result:", result)
 }
