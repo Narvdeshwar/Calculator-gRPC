@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package chat;
+
+option go_package = "./pb";
+
+message Message{
+  string user = 1;
+  string text = 2;
+}
+
+message User{
+  string id = 1;
+}
+
+service ChatService{
+  rpc ReceiveMessage(User) returns (stream Message);
+  rpc SendBulkMessage(stream Message) returns (Message);
+  rpc ChatStream(stream Message) returns (stream Message);
+}
